@@ -1,0 +1,1660 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="3" failures="20" skipped="0" tests="41" time="129.140" timestamp="2026-01-07T11:19:49.200205+08:00" hostname="ARICs-MacBook-Pro.local"><testcase classname="tests.discovery_test" name="test_get_service_info" time="0.070" /><testcase classname="tests.discovery_test" name="test_discover_entity_types_empty" time="0.319" /><testcase classname="tests.discovery_test" name="test_discover_entity_types_with_data" time="0.363" /><testcase classname="tests.discovery_test" name="test_discover_schemas_all" time="0.035"><error message="failed on setup with &quot;sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.&quot;">client = &lt;httpx.AsyncClient object at 0x10713ce20&gt;
+
+    @pytest.fixture
+    async def sample_entity_type(client):
+        """Create a sample entity type for discovery tests."""
+        entity_type_data = {
+            "entity_type": "user",
+            "description": "User entities for testing",
+            "columns": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "nullable": False,
+                    "unique": True,
+                    "max_length": 255,
+                    "description": "User email address"
+                },
+                {
+                    "name": "username",
+                    "type": "string",
+                    "nullable": False,
+                    "indexed": True,
+                    "max_length": 100,
+                    "description": "Username"
+                },
+                {
+                    "name": "age",
+                    "type": "integer",
+                    "nullable": True,
+                    "description": "User age"
+                },
+                {
+                    "name": "is_verified",
+                    "type": "boolean",
+                    "nullable": False,
+                    "default": False
+                }
+            ],
+            "created_by": "test"
+        }
+    
+&gt;       response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/discovery_test.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...d0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</error></testcase><testcase classname="tests.discovery_test" name="test_discover_specific_schema" time="0.052"><error message="failed on setup with &quot;sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.&quot;">client = &lt;httpx.AsyncClient object at 0x107b64280&gt;
+
+    @pytest.fixture
+    async def sample_entity_type(client):
+        """Create a sample entity type for discovery tests."""
+        entity_type_data = {
+            "entity_type": "user",
+            "description": "User entities for testing",
+            "columns": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "nullable": False,
+                    "unique": True,
+                    "max_length": 255,
+                    "description": "User email address"
+                },
+                {
+                    "name": "username",
+                    "type": "string",
+                    "nullable": False,
+                    "indexed": True,
+                    "max_length": 100,
+                    "description": "Username"
+                },
+                {
+                    "name": "age",
+                    "type": "integer",
+                    "nullable": True,
+                    "description": "User age"
+                },
+                {
+                    "name": "is_verified",
+                    "type": "boolean",
+                    "nullable": False,
+                    "default": False
+                }
+            ],
+            "created_by": "test"
+        }
+    
+&gt;       response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/discovery_test.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...f0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</error></testcase><testcase classname="tests.discovery_test" name="test_discover_nonexistent_schema" time="0.414" /><testcase classname="tests.discovery_test" name="test_discover_operations" time="0.041" /><testcase classname="tests.discovery_test" name="test_full_discovery_flow" time="0.469"><failure message="assert 404 == 201&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x107de8f10&gt;
+
+    @pytest.mark.asyncio
+    async def test_full_discovery_flow(client):
+        """Test complete discovery flow: service -&gt; entity types -&gt; schemas -&gt; operations."""
+    
+        # Step 1: Discover service
+        response = await client.get("/api/v1/discovery/")
+        assert response.status_code == 200
+        service_info = response.json()
+        assert service_info["service"]["name"] == "entity-api"
+    
+        # Step 2: Create an entity type via DDL
+        entity_type_data = {
+            "entity_type": "product",
+            "description": "Product catalog",
+            "columns": [
+                {"name": "name", "type": "string", "nullable": False, "max_length": 255},
+                {"name": "price", "type": "float", "nullable": False},
+                {"name": "stock", "type": "integer", "nullable": False, "default": 0}
+            ],
+            "created_by": "discovery_test"
+        }
+    
+        response = await client.post("/api/v1/entity_type", json=entity_type_data)
+        assert response.status_code == 201
+    
+        # Step 3: Discover entity types
+        response = await client.get("/api/v1/discovery/entity-types")
+        assert response.status_code == 200
+        entity_types = response.json()
+        assert "product" in entity_types["entity_types"]
+    
+        # Step 4: Get product schema
+        response = await client.get("/api/v1/discovery/schemas/product")
+        assert response.status_code == 200
+        schema = response.json()
+        assert schema["entity_type"] == "product"
+        assert "name" in schema["columns"]
+        assert "price" in schema["columns"]
+    
+        # Step 5: Use discovered endpoint to create entity
+        create_endpoint = schema["endpoints"]["create"]
+        example_data = {
+            "name": "Test Product",
+            "price": 29.99,
+            "stock": 100,
+            "created_by": "discovery_test"
+        }
+    
+        response = await client.post(create_endpoint, json=example_data)
+&gt;       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/discovery_test.py:341: AssertionError</failure></testcase><testcase classname="tests.discovery_test" name="test_schema_example_payload_accuracy" time="0.413"><error message="failed on setup with &quot;sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.&quot;">client = &lt;httpx.AsyncClient object at 0x107948160&gt;
+
+    @pytest.fixture
+    async def sample_entity_type(client):
+        """Create a sample entity type for discovery tests."""
+        entity_type_data = {
+            "entity_type": "user",
+            "description": "User entities for testing",
+            "columns": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "nullable": False,
+                    "unique": True,
+                    "max_length": 255,
+                    "description": "User email address"
+                },
+                {
+                    "name": "username",
+                    "type": "string",
+                    "nullable": False,
+                    "indexed": True,
+                    "max_length": 100,
+                    "description": "Username"
+                },
+                {
+                    "name": "age",
+                    "type": "integer",
+                    "nullable": True,
+                    "description": "User age"
+                },
+                {
+                    "name": "is_verified",
+                    "type": "boolean",
+                    "nullable": False,
+                    "default": False
+                }
+            ],
+            "created_by": "test"
+        }
+    
+&gt;       response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/discovery_test.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...f0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</error></testcase><testcase classname="tests.discovery_test" name="test_multiple_entity_types_discovery" time="0.046"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x107c25f70&gt;
+
+    @pytest.mark.asyncio
+    async def test_multiple_entity_types_discovery(client):
+        """Test discovery with multiple entity types."""
+    
+        # Create multiple entity types
+        types_to_create = [
+            {
+                "entity_type": "user",
+                "description": "Users",
+                "columns": [{"name": "email", "type": "string", "nullable": False}]
+            },
+            {
+                "entity_type": "product",
+                "description": "Products",
+                "columns": [{"name": "name", "type": "string", "nullable": False}]
+            },
+            {
+                "entity_type": "order",
+                "description": "Orders",
+                "columns": [{"name": "order_id", "type": "string", "nullable": False}]
+            }
+        ]
+    
+        for entity_type_data in types_to_create:
+&gt;           response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/discovery_test.py:402: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...80&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_api_test" name="test_health_check" time="0.032" /><testcase classname="tests.entity_api_test" name="test_create_entity" time="0.030"><failure message="assert 404 == 201&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x107dc64c0&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_entity(client):
+        """Test creating an entity."""
+        entity_data = {
+            "name": "Test Entity",
+            "entity_type": "test",
+            "description": "A test entity",
+            "status": "active",
+            "data": {"key": "value"},
+            "created_by": "test_user"
+        }
+    
+        response = await client.post("/api/v1/entities", json=entity_data)
+&gt;       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:76: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_create_entity_missing_required_field" time="0.033"><failure message="assert 404 == 422&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x107ab2670&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_entity_missing_required_field(client):
+        """Test creating entity with missing required field."""
+        entity_data = {
+            "entity_type": "test"
+        }
+    
+        response = await client.post("/api/v1/entities", json=entity_data)
+&gt;       assert response.status_code == 422  # Validation error
+E       assert 404 == 422
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:92: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_create_entity_empty_name" time="0.032"><failure message="assert 404 == 422&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x1082263a0&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_entity_empty_name(client):
+        """Test creating entity with empty name."""
+        entity_data = {
+            "name": "",
+            "entity_type": "test"
+        }
+    
+        response = await client.post("/api/v1/entities", json=entity_data)
+&gt;       assert response.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:104: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_get_entity" time="0.707"><failure message="KeyError: 'id'">client = &lt;httpx.AsyncClient object at 0x108227be0&gt;
+
+    @pytest.mark.asyncio
+    async def test_get_entity(client):
+        """Test retrieving an entity."""
+        create_response = await client.post(
+            "/api/v1/entities",
+            json={
+                "name": "Test Entity",
+                "entity_type": "test"
+            }
+        )
+&gt;       entity_id = create_response.json()["id"]
+E       KeyError: 'id'
+
+tests/entity_api_test.py:118: KeyError</failure></testcase><testcase classname="tests.entity_api_test" name="test_get_nonexistent_entity" time="0.035" /><testcase classname="tests.entity_api_test" name="test_list_entities" time="0.157"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x10798b8b0&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_entities(client):
+        """Test listing entities."""
+        for i in range(3):
+            await client.post(
+                "/api/v1/entities",
+                json={
+                    "name": f"Entity {i}",
+                    "entity_type": "test"
+                }
+            )
+    
+        response = await client.get("/api/v1/entities")
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:147: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_list_entities_with_pagination" time="0.224"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x107819670&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_entities_with_pagination(client):
+        """Test listing entities with pagination."""
+        for i in range(5):
+            await client.post(
+                "/api/v1/entities",
+                json={
+                    "name": f"Entity {i}",
+                    "entity_type": "test"
+                }
+            )
+    
+        response = await client.get("/api/v1/entities?skip=0&amp;limit=2")
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:166: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_list_entities_with_type_filter" time="0.314"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x10748f460&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_entities_with_type_filter(client):
+        """Test listing entities with type filter."""
+        await client.post("/api/v1/entities", json={"name": "User 1", "entity_type": "user"})
+        await client.post("/api/v1/entities", json={"name": "Product 1", "entity_type": "product"})
+    
+        response = await client.get("/api/v1/entities?entity_type=user")
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:181: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_list_entities_by_type" time="0.140"><failure message="assert 404 == 200&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x107818730&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_entities_by_type(client):
+        """Test listing entities by type endpoint."""
+        await client.post("/api/v1/entities", json={"name": "User 1", "entity_type": "user"})
+        await client.post("/api/v1/entities", json={"name": "User 2", "entity_type": "user"})
+    
+        response = await client.get("/api/v1/entities/type/user")
+&gt;       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:194: AssertionError</failure></testcase><testcase classname="tests.entity_api_test" name="test_update_entity" time="0.059"><failure message="KeyError: 'id'">client = &lt;httpx.AsyncClient object at 0x107194850&gt;
+
+    @pytest.mark.asyncio
+    async def test_update_entity(client):
+        """Test updating an entity."""
+        create_response = await client.post(
+            "/api/v1/entities",
+            json={
+                "name": "Original Name",
+                "entity_type": "test",
+                "status": "active"
+            }
+        )
+&gt;       entity_id = create_response.json()["id"]
+E       KeyError: 'id'
+
+tests/entity_api_test.py:211: KeyError</failure></testcase><testcase classname="tests.entity_api_test" name="test_update_nonexistent_entity" time="0.373" /><testcase classname="tests.entity_api_test" name="test_soft_delete_entity" time="0.193"><failure message="KeyError: 'id'">client = &lt;httpx.AsyncClient object at 0x107dc9790&gt;
+
+    @pytest.mark.asyncio
+    async def test_soft_delete_entity(client):
+        """Test soft delete (mark as inactive)."""
+        create_response = await client.post(
+            "/api/v1/entities",
+            json={"name": "Test", "entity_type": "test"}
+        )
+&gt;       entity_id = create_response.json()["id"]
+E       KeyError: 'id'
+
+tests/entity_api_test.py:247: KeyError</failure></testcase><testcase classname="tests.entity_api_test" name="test_delete_nonexistent_entity" time="0.042" /><testcase classname="tests.entity_api_test" name="test_head_entity_exists" time="0.416"><failure message="KeyError: 'id'">client = &lt;httpx.AsyncClient object at 0x107e271f0&gt;
+
+    @pytest.mark.asyncio
+    async def test_head_entity_exists(client):
+        """Test HEAD endpoint for entity existence."""
+        create_response = await client.post(
+            "/api/v1/entities",
+            json={"name": "Test", "entity_type": "test"}
+        )
+&gt;       entity_id = create_response.json()["id"]
+E       KeyError: 'id'
+
+tests/entity_api_test.py:271: KeyError</failure></testcase><testcase classname="tests.entity_api_test" name="test_head_entity_not_found" time="0.037" /><testcase classname="tests.entity_api_test" name="test_full_crud_cycle" time="0.050"><failure message="assert 404 == 201&#10; +  where 404 = &lt;Response [404 Not Found]&gt;.status_code">client = &lt;httpx.AsyncClient object at 0x1078063d0&gt;
+
+    @pytest.mark.asyncio
+    async def test_full_crud_cycle(client):
+        """Test complete CRUD cycle."""
+        create_response = await client.post(
+            "/api/v1/entities",
+            json={
+                "name": "Test Entity",
+                "entity_type": "test",
+                "data": {"status": "new"}
+            }
+        )
+&gt;       assert create_response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = &lt;Response [404 Not Found]&gt;.status_code
+
+tests/entity_api_test.py:296: AssertionError</failure></testcase><testcase classname="tests.entity_type_test" name="test_create_entity_type" time="0.084"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x1073f30d0&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_entity_type(client):
+        """Test creating a new entity type."""
+        entity_type_data = {
+            "entity_type": "user",
+            "description": "User entities",
+            "columns": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "nullable": False,
+                    "unique": True,
+                    "max_length": 255
+                },
+                {
+                    "name": "username",
+                    "type": "string",
+                    "nullable": False,
+                    "indexed": True,
+                    "max_length": 100
+                }
+            ],
+            "created_by": "test"
+        }
+    
+&gt;       response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...c0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_create_entity_type_with_all_column_types" time="0.062" /><testcase classname="tests.entity_type_test" name="test_create_duplicate_entity_type" time="0.069"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x107990f70&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_duplicate_entity_type(client):
+        """Test creating duplicate entity type fails."""
+        entity_type_data = {
+            "entity_type": "user",
+            "columns": [
+                {"name": "email", "type": "string", "nullable": False}
+            ]
+        }
+    
+        # Create first time
+&gt;       response = await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:147: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...e0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_create_entity_type_invalid_name" time="0.175" /><testcase classname="tests.entity_type_test" name="test_create_entity_type_no_columns" time="0.051" /><testcase classname="tests.entity_type_test" name="test_list_entity_types_empty" time="0.434" /><testcase classname="tests.entity_type_test" name="test_list_entity_types" time="0.440" /><testcase classname="tests.entity_type_test" name="test_list_entity_types_with_pagination" time="0.488"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_type_0' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x10733acd0&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_entity_types_with_pagination(client):
+        """Test listing entity types with pagination."""
+        # Create 5 entity types
+        for i in range(5):
+            entity_type_data = {
+                "entity_type": f"type_{i}",
+                "columns": [
+                    {"name": "field", "type": "string", "nullable": False}
+                ]
+            }
+&gt;           await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:226: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...c0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_type_0', metadata = MetaData(), schema = None
+keep_existing = False, extend_existing = False, must_exist = False, key = 'entity_type_0'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_type_0' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_get_entity_type" time="0.456"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x107b46340&gt;
+
+    @pytest.mark.asyncio
+    async def test_get_entity_type(client):
+        """Test getting a specific entity type."""
+        # Create entity type
+        entity_type_data = {
+            "entity_type": "user",
+            "description": "User type",
+            "columns": [
+                {"name": "email", "type": "string", "nullable": False}
+            ]
+        }
+&gt;       await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...40&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_get_nonexistent_entity_type" time="0.357" /><testcase classname="tests.entity_type_test" name="test_delete_entity_type" time="0.097"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x10736fd00&gt;
+
+    @pytest.mark.asyncio
+    async def test_delete_entity_type(client):
+        """Test deleting (deactivating) an entity type."""
+        # Create entity type
+        entity_type_data = {
+            "entity_type": "user",
+            "columns": [
+                {"name": "email", "type": "string", "nullable": False}
+            ]
+        }
+&gt;       await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:278: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...60&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_user', metadata = MetaData(), schema = None, keep_existing = False
+extend_existing = False, must_exist = False, key = 'entity_user'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_user' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_delete_nonexistent_entity_type" time="0.366" /><testcase classname="tests.entity_type_test" name="test_list_only_active_entity_types" time="0.356"><failure message="sqlalchemy.exc.InvalidRequestError: Table 'entity_type_0' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.">client = &lt;httpx.AsyncClient object at 0x107958250&gt;
+
+    @pytest.mark.asyncio
+    async def test_list_only_active_entity_types(client):
+        """Test listing only active entity types."""
+        # Create two entity types
+        for i in range(2):
+            entity_type_data = {
+                "entity_type": f"type_{i}",
+                "columns": [
+                    {"name": "field", "type": "string", "nullable": False}
+                ]
+            }
+&gt;           await client.post("/api/v1/entity_type", json=entity_type_data)
+
+tests/entity_type_test.py:309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1877: in post
+    return await self.request(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1559: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1646: in send
+    response = await self._send_handling_auth(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1674: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1711: in _send_handling_redirects
+    response = await self._send_single_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_client.py:1748: in _send_single_request
+    response = await transport.handle_async_request(request)
+../../.venv/lib/python3.9/site-packages/httpx/_transports/asgi.py:162: in handle_async_request
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/fastapi/applications.py:1054: in __call__
+    await super().__call__(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/applications.py:123: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../.venv/lib/python3.9/site-packages/starlette/middleware/exceptions.py:62: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:758: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:778: in app
+    await route.handle(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:299: in handle
+    await self.app(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:79: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:64: in wrapped_app
+    raise exc
+../../.venv/lib/python3.9/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    await app(scope, receive, sender)
+../../.venv/lib/python3.9/site-packages/starlette/routing.py:74: in app
+    response = await func(request)
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:278: in app
+    raw_response = await run_endpoint_function(
+../../.venv/lib/python3.9/site-packages/fastapi/routing.py:191: in run_endpoint_function
+    return await dependant.call(**values)
+app/entity_type_routes.py:62: in create_entity_type
+    return await service.create_entity_type(entity_type_data)
+app/entity_type_service.py:75: in create_entity_type
+    model_class = create_dynamic_entity_model(
+app/database.py:60: in create_dynamic_entity_model
+    model_class = type(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_api.py:196: in __init__
+    _as_declarative(reg, cls, dict_)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:247: in _as_declarative
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:328: in setup_mapping
+    return _ClassScanMapperConfig(
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:578: in __init__
+    self._setup_table(table)
+../../.venv/lib/python3.9/site-packages/sqlalchemy/orm/decl_base.py:1729: in _setup_table
+    table_cls(
+&lt;string&gt;:2: in __new__
+    ???
+../../.venv/lib/python3.9/site-packages/sqlalchemy/util/deprecations.py:281: in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:436: in __new__
+    return cls._new(*args, **kw)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+cls = &lt;class 'sqlalchemy.sql.schema.Table'&gt;
+args = (Column('id', String(length=36), table=None, primary_key=True, nullable=False, default=CallableColumnDefault(&lt;function...f0&gt;)), Column('created_by', String(length=255), table=None), Column('updated_by', String(length=255), table=None), ...)
+kw = {}, name = 'entity_type_0', metadata = MetaData(), schema = None
+keep_existing = False, extend_existing = False, must_exist = False, key = 'entity_type_0'
+
+    @classmethod
+    def _new(cls, *args: Any, **kw: Any) -&gt; Any:
+        if not args and not kw:
+            # python3k pickle seems to call this
+            return object.__new__(cls)
+    
+        try:
+            name, metadata, args = args[0], args[1], args[2:]
+        except IndexError:
+            raise TypeError(
+                "Table() takes at least two positional-only "
+                "arguments 'name' and 'metadata'"
+            )
+    
+        schema = kw.get("schema", None)
+        if schema is None:
+            schema = metadata.schema
+        elif schema is BLANK_SCHEMA:
+            schema = None
+        keep_existing = kw.get("keep_existing", False)
+        extend_existing = kw.get("extend_existing", False)
+    
+        if keep_existing and extend_existing:
+            msg = "keep_existing and extend_existing are mutually exclusive."
+            raise exc.ArgumentError(msg)
+    
+        must_exist = kw.pop("must_exist", kw.pop("mustexist", False))
+        key = _get_table_key(name, schema)
+        if key in metadata.tables:
+            if not keep_existing and not extend_existing and bool(args):
+&gt;               raise exc.InvalidRequestError(
+                    f"Table '{key}' is already defined for this MetaData "
+                    "instance.  Specify 'extend_existing=True' "
+                    "to redefine "
+                    "options and columns on an "
+                    "existing Table object."
+                )
+E               sqlalchemy.exc.InvalidRequestError: Table 'entity_type_0' is already defined for this MetaData instance.  Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
+
+../../.venv/lib/python3.9/site-packages/sqlalchemy/sql/schema.py:468: InvalidRequestError</failure></testcase><testcase classname="tests.entity_type_test" name="test_column_constraints" time="0.517" /></testsuite></testsuites>
