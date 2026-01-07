@@ -4,6 +4,7 @@ Run with: pytest tests/ -v
 """
 
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -13,7 +14,7 @@ from app.database import Base
 from main import app
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_db_session():
     """Create test database session."""
     engine = create_async_engine(
@@ -35,7 +36,7 @@ async def test_db_session():
     await engine.dispose()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def client(test_db_session):
     """Create test client with overridden session dependency."""
 

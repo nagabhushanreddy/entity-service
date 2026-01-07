@@ -33,7 +33,7 @@ class EntityTypeCreate(BaseModel):
     """Schema for creating a new entity type (DDL operation)."""
     entity_type: str = Field(..., min_length=1, max_length=100, pattern="^[a-z][a-z0-9_]*$", description="Entity type name (lowercase, underscores)")
     description: Optional[str] = Field(None, max_length=1000, description="Entity type description")
-    columns: List[ColumnDefinition] = Field(..., min_items=1, description="Column definitions")
+    columns: List[ColumnDefinition] = Field(..., min_length=1, description="Column definitions")
     created_by: Optional[str] = Field(None, description="User creating the entity type")
 
 
@@ -135,7 +135,30 @@ class EntityResponse(EntityBase):
     updated_by: Optional[str]
     version: int
     
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    
+    @classmethod
+    def model_validate(cls, obj, **kwargs):
+        """Custom validation to handle entity_metadata -> metadata mapping"""
+        if hasattr(obj, 'entity_metadata'):
+            # Create a dict with proper field names
+            data = {
+                'id': obj.id,
+                'name': obj.name,
+                'description': obj.description,
+                'entity_type': obj.entity_type,
+                'status': obj.status,
+                'data': obj.data,
+                'metadata': obj.entity_metadata,  # Map entity_metadata to metadata
+                'is_active': obj.is_active,
+                'created_at': obj.created_at,
+                'updated_at': obj.updated_at,
+                'created_by': obj.created_by,
+                'updated_by': obj.updated_by,
+                'version': obj.version
+            }
+            return super().model_validate(data, **kwargs)
+        return super().model_validate(obj, **kwargs)
 
 
 class EntityListResponse(BaseModel):

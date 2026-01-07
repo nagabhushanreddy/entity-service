@@ -1,6 +1,6 @@
 """Database configuration and models."""
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, String, DateTime, JSON, Text, Boolean, Integer, MetaData
 from datetime import datetime
 from typing import Dict, Any, Optional, Type
@@ -68,3 +68,26 @@ def create_dynamic_entity_model(
 
 # Cache for dynamically created models
 _dynamic_models: Dict[str, Type] = {}
+
+
+class Entity(Base):
+    """Base entity model for CRUD operations."""
+    
+    __tablename__ = "entities"
+    
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    entity_type = Column(String(100), nullable=False, index=True)
+    status = Column(String(50), default="active", nullable=False)
+    data = Column(JSON, nullable=True)
+    entity_metadata = Column("metadata", JSON, nullable=True)  # Renamed to avoid SQLAlchemy reserved name
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_by = Column(String(255), nullable=True)
+    updated_by = Column(String(255), nullable=True)
+    version = Column(Integer, default=1, nullable=False)
+    
+    def __repr__(self):
+        return f"<Entity(id={self.id}, name={self.name}, type={self.entity_type})>"

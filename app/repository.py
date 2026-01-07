@@ -23,7 +23,7 @@ class EntityRepository:
             entity_type=entity_data.entity_type,
             status=entity_data.status,
             data=entity_data.data,
-            metadata=entity_data.metadata,
+            entity_metadata=entity_data.metadata,
             created_by=entity_data.created_by
         )
         self.session.add(entity)

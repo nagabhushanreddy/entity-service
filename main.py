@@ -12,7 +12,8 @@ from app.entity_type_routes import entity_type_router
 from app.entity_type_service import EntityTypeService
 from app.dynamic_routes import get_dynamic_router
 from app.discovery_routes import discovery_router
-from utils_api.logging import setup_logging
+from app.routes import entity_router
+from utils import setup_logging
 
 # Configure logging
 logger = setup_logging(
@@ -100,6 +101,7 @@ def healthz() -> dict[str, str]:
 
 
 # Include routers
+app.include_router(entity_router, prefix="/api/v1")
 app.include_router(entity_type_router, prefix="/api/v1")
 app.include_router(discovery_router, prefix="/api/v1")
 
