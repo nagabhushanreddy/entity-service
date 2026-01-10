@@ -2,7 +2,8 @@
   "version": "v1",
   "api": {
     "prefix": "/api/${version}",
-    "project_name": "Entity API"
+    "project_name": "Entity API",
+    "port": 8003
   },
   "service": {
     "name": "entity-service"

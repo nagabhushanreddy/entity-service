@@ -168,6 +168,10 @@ class Config:
     def log_file(self) -> Path:
         return self.get_path("logging.file")
 
+    @property
+    def port(self) -> int:
+        return self.get("api.port", 8003)
+
 
 settings = load_settings(EntityServiceSettings, env_file=".env")
 config = Config(settings=settings, config_dir="config")
