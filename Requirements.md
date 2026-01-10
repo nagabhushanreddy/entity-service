@@ -620,6 +620,49 @@ gunicorn "src.main:app" --workers 4 --worker-class uvicorn.workers.UvicornWorker
 - Clear operation descriptions and example payloads
 - Comprehensive error documentation
 
+### 6.6 Project structure
+
+All microservices MUST follow a consistent directory structure for maintainability and discoverability:
+
+**Root Level:**
+- `main.py` - Application entry point with FastAPI app, lifespan, middleware
+- `requirements.txt` - Production dependencies
+- `requirements-dev.txt` - Development dependencies (pytest, black, mypy, coverage)
+- `.env.example` - Environment variable template
+- `README.md` - Service documentation
+- `config/` - Configuration files (JSON/YAML) with placeholder support
+
+**Application Module (`app/`):**
+- `config.py` - Configuration loader (utils-service first, local JSON fallback)
+- `schemas.py` - Pydantic models for request/response validation
+- `exceptions.py` - Custom exception classes with error codes
+- `middleware.py` - Request context, correlation ID, logging middleware
+- `error_codes.py` - Service-specific error code definitions
+- `client.py` - Async/Sync client library for inter-service communication
+
+**Organized Submodules:**
+- `app/database/` - All database-related code
+  - `database.py` - SQLAlchemy models and ORM definitions
+  - `repository.py` - Data access layer (queries, filters)
+  - `dependencies.py` - FastAPI dependency injection (sessions)
+- `app/routes/` - API route handlers (thin layer, delegates to services)
+  - Organized by domain/resource (e.g., `user_routes.py`, `entity_type_routes.py`)
+- `app/services/` - Business logic layer
+  - Organized by domain (e.g., `user_service.py`, `entity_type_service.py`)
+  - Contains authorization checks, workflow orchestration
+
+**Testing:**
+- `tests/` - All test files
+  - `unit/` - Unit tests for services and utilities
+  - `integration/` - Integration tests for API endpoints
+  - Test files named `test_*.py` for pytest discovery
+
+**Standards:**
+- Each directory with Python code MUST have `__init__.py` for clean imports
+- Use absolute imports: `from app.services import UserService`
+- Export commonly used classes/functions in `__init__.py` files
+- Follow layered architecture: Routes → Services → Repositories → Database
+
 ---
 
 ## 7. Implementation Status
