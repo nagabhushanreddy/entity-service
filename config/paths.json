@@ -1,0 +1,10 @@
+{
+  "paths": {
+    "logs": {
+      "dir": "logs"
+    },
+    "data": {
+      "dir": "data"
+    }
+  }
+}

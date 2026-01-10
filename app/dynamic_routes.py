@@ -6,12 +6,14 @@ from typing import Optional, Dict, Any
 
 from app.dependencies import get_session
 from app.dynamic_service import DynamicEntityService
+from app.entity_type_service import EntityTypeService
 from app.schemas import (
     DynamicEntityCreate,
     DynamicEntityUpdate,
     DynamicEntityListResponse,
     ErrorResponse
 )
+from app.middleware import get_requestor_id
 
 
 def get_dynamic_router(entity_type: str) -> APIRouter:
@@ -22,7 +24,9 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
     def get_service(session: AsyncSession = Depends(get_session)) -> DynamicEntityService:
         """Dependency to get DynamicEntityService for this entity type."""
         try:
-            return DynamicEntityService(session, entity_type)
+            from main import engine
+            entity_type_service = EntityTypeService(session, engine)
+            return DynamicEntityService(session, entity_type, entity_type_service)
         except ValueError as e:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -35,6 +39,7 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         status_code=status.HTTP_201_CREATED,
         responses={
             400: {"model": ErrorResponse, "description": "Invalid input"},
+            403: {"model": ErrorResponse, "description": "Requestor does not own this entity type"},
             404: {"model": ErrorResponse, "description": "Entity type not found"},
         }
     )
@@ -46,11 +51,10 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         Create a new {entity_type} entity.
         
         Provide the entity data according to the schema defined for this entity type.
+        Only the owner of the entity type can create entities.
         """
-        try:
-            return await service.create_entity(entity_data)
-        except Exception as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        requestor = get_requestor_id()
+        return await service.create_entity(entity_data, requestor=requestor)
     
     @router.get(
         "",
@@ -71,6 +75,8 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         - **skip**: Number of records to skip (for pagination)
         - **limit**: Number of records to return (max 1000)
         - **is_active**: Filter by active status
+        
+        Note: Read access is allowed for any requestor.
         """
         items, total = await service.list_entities(
             skip=skip,
@@ -90,7 +96,11 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         entity_id: str = Path(..., description="Entity ID"),
         service: DynamicEntityService = Depends(get_service)
     ) -> Dict[str, Any]:
-        f"""Get a specific {entity_type} entity by ID."""
+        f"""
+        Get a specific {entity_type} entity by ID.
+        
+        Note: Read access is allowed for any requestor.
+        """
         entity = await service.get_entity(entity_id)
         if not entity:
             raise HTTPException(
@@ -103,6 +113,7 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         "/{entity_id}",
         response_model=Dict[str, Any],
         responses={
+            403: {"model": ErrorResponse, "description": "Requestor does not own this entity type"},
             404: {"model": ErrorResponse, "description": "Entity not found"},
             400: {"model": ErrorResponse, "description": "Invalid input"},
         }
@@ -116,22 +127,22 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         Update a {entity_type} entity.
         
         Only provided fields will be updated (partial updates supported).
+        Only the owner of the entity type can update entities.
         """
-        try:
-            entity = await service.update_entity(entity_id, entity_data)
-            if not entity:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"{entity_type.capitalize()} entity with id {entity_id} not found"
-                )
-            return entity
-        except Exception as e:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        requestor = get_requestor_id()
+        entity = await service.update_entity(entity_id, entity_data, requestor=requestor)
+        if not entity:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{entity_type.capitalize()} entity with id {entity_id} not found"
+            )
+        return entity
     
     @router.delete(
         "/{entity_id}",
         status_code=status.HTTP_204_NO_CONTENT,
         responses={
+            403: {"model": ErrorResponse, "description": "Requestor does not own this entity type"},
             404: {"model": ErrorResponse, "description": "Entity not found"},
         }
     )
@@ -145,8 +156,10 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
         
         By default, performs a soft delete (marks as inactive).
         Use hard_delete=true to permanently remove the entity.
+        Only the owner of the entity type can delete entities.
         """
-        success = await service.delete_entity(entity_id, hard_delete=hard_delete)
+        requestor = get_requestor_id()
+        success = await service.delete_entity(entity_id, hard_delete=hard_delete, requestor=requestor)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -166,6 +179,8 @@ def get_dynamic_router(entity_type: str) -> APIRouter:
     ) -> None:
         f"""
         Check if a {entity_type} entity exists (returns 200 if exists, 404 if not).
+        
+        Note: Read access is allowed for any requestor.
         """
         exists = await service.entity_exists(entity_id)
         if not exists:

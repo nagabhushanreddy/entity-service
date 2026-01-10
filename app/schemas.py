@@ -1,9 +1,12 @@
 """Pydantic schemas for request/response validation."""
 
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Any, Dict, List
+from typing import Optional, Any, Dict, List, Generic, TypeVar
 from datetime import datetime
 from enum import Enum
+import uuid
+
+T = TypeVar('T')
 
 
 class ColumnType(str, Enum):
@@ -168,6 +171,27 @@ class EntityListResponse(BaseModel):
     total: int
     skip: int
     limit: int
+
+
+class StandardErrorDetail(BaseModel):
+    """Standard error detail schema"""
+    code: str = Field(..., description="Error code")
+    message: str = Field(..., description="Human readable error message")
+    details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
+
+
+class StandardMetadata(BaseModel):
+    """Standard response metadata"""
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="ISO8601 timestamp")
+    correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Request correlation ID")
+
+
+class StandardResponse(BaseModel, Generic[T]):
+    """Standard response wrapper for all API responses"""
+    success: bool = Field(..., description="Whether request was successful")
+    data: Optional[T] = Field(None, description="Response data")
+    error: Optional[StandardErrorDetail] = Field(None, description="Error information if failed")
+    metadata: StandardMetadata = Field(default_factory=StandardMetadata, description="Response metadata")
 
 
 class ErrorResponse(BaseModel):

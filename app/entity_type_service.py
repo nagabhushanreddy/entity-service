@@ -7,6 +7,18 @@ from datetime import datetime
 
 from app.database import Base, EntityTypeDefinition, create_dynamic_entity_model, _dynamic_models
 from app.schemas import EntityTypeCreate, EntityTypeResponse, ColumnDefinition, ColumnType
+from app.exceptions import (
+    EntityTypeExistsError,
+    EntityTypeNotFoundError,
+    EntityTypeInactiveError,
+    RequestorMismatchError,
+    RequestorUnauthorizedError,
+    InvalidSchemaError,
+    InvalidColumnTypeError,
+    DuplicateColumnError,
+    DDLOperationFailedError
+)
+from app.middleware import get_requestor_id
 
 
 class EntityTypeService:
@@ -39,8 +51,23 @@ class EntityTypeService:
             default=col_def.default
         )
     
-    async def create_entity_type(self, entity_type_data: EntityTypeCreate) -> EntityTypeResponse:
-        """Create a new entity type and its table (DDL operation)."""
+    async def create_entity_type(self, entity_type_data: EntityTypeCreate, requestor: str) -> EntityTypeResponse:
+        """Create a new entity type and its table (DDL operation).
+        
+        Args:
+            entity_type_data: Entity type definition
+            requestor: The requestor (service/tenant) creating the entity type
+            
+        Raises:
+            EntityTypeExistsError: If entity type already exists
+            InvalidSchemaError: If schema is invalid
+            InvalidColumnTypeError: If column type is not supported
+            DuplicateColumnError: If duplicate columns
+        """
+        
+        # Validate entity type name
+        if not entity_type_data.entity_type or len(entity_type_data.entity_type) == 0:
+            raise InvalidSchemaError("Entity type name cannot be empty")
         
         # Check if entity type already exists
         result = await self.session.execute(
@@ -50,7 +77,23 @@ class EntityTypeService:
         )
         existing = result.scalar_one_or_none()
         if existing:
-            raise ValueError(f"Entity type '{entity_type_data.entity_type}' already exists")
+            raise EntityTypeExistsError(entity_type_data.entity_type)
+        
+        # Validate columns
+        if not entity_type_data.columns or len(entity_type_data.columns) == 0:
+            raise InvalidSchemaError("At least one column must be defined")
+        
+        column_names = set()
+        for col_def in entity_type_data.columns:
+            if col_def.name in column_names:
+                raise DuplicateColumnError(col_def.name)
+            column_names.add(col_def.name)
+            
+            # Validate column type
+            try:
+                _ = ColumnType[col_def.type.upper()]
+            except KeyError:
+                raise InvalidColumnTypeError(col_def.type)
         
         # Generate table name
         table_name = f"entity_{entity_type_data.entity_type}"
@@ -72,26 +115,29 @@ class EntityTypeService:
             }
         
         # Create dynamic model
-        model_class = create_dynamic_entity_model(
-            entity_type=entity_type_data.entity_type,
-            table_name=table_name,
-            additional_columns=additional_columns
-        )
-        
-        # Create the table in database
-        async with self.engine.begin() as conn:
-            await conn.run_sync(model_class.__table__.create)
+        try:
+            model_class = create_dynamic_entity_model(
+                entity_type=entity_type_data.entity_type,
+                table_name=table_name,
+                additional_columns=additional_columns
+            )
+            
+            # Create the table in database
+            async with self.engine.begin() as conn:
+                await conn.run_sync(model_class.__table__.create)
+        except Exception as e:
+            raise DDLOperationFailedError(f"Failed to create entity type table: {str(e)}")
         
         # Cache the model
         _dynamic_models[entity_type_data.entity_type] = model_class
         
-        # Register entity type in registry
+        # Register entity type in registry with requestor as owner
         entity_type_def = EntityTypeDefinition(
             entity_type=entity_type_data.entity_type,
             table_name=table_name,
             schema_definition=schema_def,
             description=entity_type_data.description,
-            created_by=entity_type_data.created_by
+            created_by=requestor  # Store requestor as the owner
         )
         
         self.session.add(entity_type_def)
@@ -100,8 +146,18 @@ class EntityTypeService:
         
         return EntityTypeResponse.model_validate(entity_type_def)
     
-    async def get_entity_type(self, entity_type: str) -> Optional[EntityTypeResponse]:
-        """Get entity type definition."""
+    async def get_entity_type(self, entity_type: str, requestor: Optional[str] = None) -> EntityTypeResponse:
+        """Get entity type definition.
+        
+        Args:
+            entity_type: The entity type name
+            requestor: Optional requestor for authorization check (if provided, will check ownership)
+            
+        Raises:
+            EntityTypeNotFoundError: If entity type doesn't exist
+            EntityTypeInactiveError: If entity type is inactive
+            RequestorMismatchError: If requestor doesn't match owner (when provided)
+        """
         result = await self.session.execute(
             select(EntityTypeDefinition).where(
                 EntityTypeDefinition.entity_type == entity_type
@@ -110,7 +166,14 @@ class EntityTypeService:
         entity_type_def = result.scalar_one_or_none()
         
         if not entity_type_def:
-            return None
+            raise EntityTypeNotFoundError(entity_type)
+        
+        if not entity_type_def.is_active:
+            raise EntityTypeInactiveError(entity_type)
+        
+        # Check requestor ownership if provided
+        if requestor and entity_type_def.created_by != requestor:
+            raise RequestorMismatchError(entity_type, requestor)
         
         return EntityTypeResponse.model_validate(entity_type_def)
     
@@ -141,8 +204,17 @@ class EntityTypeService:
         
         return [EntityTypeResponse.model_validate(et) for et in entity_types], total
     
-    async def delete_entity_type(self, entity_type: str) -> bool:
-        """Delete entity type (mark as inactive, don't drop table)."""
+    async def delete_entity_type(self, entity_type: str, requestor: str) -> bool:
+        """Delete entity type (mark as inactive, don't drop table).
+        
+        Args:
+            entity_type: The entity type to delete
+            requestor: The requestor performing the deletion
+            
+        Raises:
+            EntityTypeNotFoundError: If entity type doesn't exist
+            RequestorMismatchError: If requestor doesn't own the entity type
+        """
         result = await self.session.execute(
             select(EntityTypeDefinition).where(
                 EntityTypeDefinition.entity_type == entity_type
@@ -151,7 +223,11 @@ class EntityTypeService:
         entity_type_def = result.scalar_one_or_none()
         
         if not entity_type_def:
-            return False
+            raise EntityTypeNotFoundError(entity_type)
+        
+        # Check ownership
+        if entity_type_def.created_by != requestor:
+            raise RequestorMismatchError(entity_type, requestor)
         
         entity_type_def.is_active = False
         entity_type_def.updated_at = datetime.utcnow()

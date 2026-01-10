@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import json
+import importlib
 import os
-import re
 from pathlib import Path
 from typing import Any, Dict, List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from utils import load_settings
+from utils import load_settings, init_app_logging
+from utils.config import resolve_placeholders
+import logging
 
 
-class Settings(BaseSettings):
+class EntityServiceSettings(BaseSettings):
     """Environment-driven application settings."""
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
@@ -41,7 +43,29 @@ class Config:
         self._create_directories()
 
     def _load_config(self) -> None:
-        """Load and merge all JSON config files from the config directory."""
+        """Prefer utils-service config; fallback to local JSON config files."""
+        # Try to load aggregated config from utils-service
+        try:
+            utils_cfg_module = importlib.import_module("utils.config")
+            # Try common patterns: exported `config` object or `get_all()`/`get_config_dict()`
+            utils_config_obj = getattr(utils_cfg_module, "config", None)
+            if utils_config_obj and hasattr(utils_config_obj, "get_all"):
+                aggregated = utils_config_obj.get_all()
+                if isinstance(aggregated, dict):
+                    self._config = self._resolve_env_vars(aggregated, aggregated)
+                    return
+            # Fallback: direct function returning dict
+            get_all_fn = getattr(utils_cfg_module, "get_all", None)
+            if callable(get_all_fn):
+                aggregated = get_all_fn()
+                if isinstance(aggregated, dict):
+                    self._config = self._resolve_env_vars(aggregated, aggregated)
+                    return
+        except Exception:
+            # If utils-service is unavailable or incompatible, continue to local fallback
+            pass
+
+        # Local fallback: load and merge JSON files from the host `config/` directory
         if not self.config_dir.exists():
             self._config = {}
             return
@@ -56,7 +80,7 @@ class Config:
                 continue
             self._merge_dicts(merged, file_data)
 
-        self._config = self._resolve_env_vars(merged)
+        self._config = self._resolve_env_vars(merged, merged)
 
     def _merge_dicts(self, base: Dict[str, Any], update: Dict[str, Any]) -> None:
         """Recursively merge one config mapping into another."""
@@ -66,20 +90,10 @@ class Config:
             else:
                 base[key] = value
 
-    def _resolve_env_vars(self, value: Any) -> Any:
-        """Replace ${VAR_NAME} patterns with environment variable values."""
-        if isinstance(value, dict):
-            return {k: self._resolve_env_vars(v) for k, v in value.items()}
-        if isinstance(value, list):
-            return [self._resolve_env_vars(item) for item in value]
-        if isinstance(value, str):
-            pattern = r"\$\{([^}]+)\}"
-            result = value
-            for var_name in re.findall(pattern, value):
-                env_val = os.getenv(var_name, "")
-                result = result.replace(f"${{{var_name}}}", env_val)
-            return result
-        return value
+    def _resolve_env_vars(self, value: Any, root: Dict[str, Any] | None = None) -> Any:
+        """Resolve ${VAR} placeholders using shared utils-service logic."""
+        root = root or {}
+        return resolve_placeholders(value, root=root, env=os.environ)
 
     def _create_directories(self) -> None:
         """Create directories declared under a `paths` section if present."""
@@ -155,5 +169,38 @@ class Config:
         return self.get_path("logging.file")
 
 
-settings = load_settings(Settings, env_file=".env")
+settings = load_settings(EntityServiceSettings, env_file=".env")
 config = Config(settings=settings, config_dir="config")
+
+
+# Module-level logger initialized during initialize_config()
+logger: logging.Logger | None = None
+
+
+def initialize_config() -> None:
+    """Initialize configuration using utils-service with local fallback.
+
+    - Sets `CONFIG_DIR` from environment (default: `config`)
+    - Reloads merged configuration (utils-service preferred)
+    - Initializes logging via utils-service
+    - Logs loaded config files for visibility
+    """
+    global logger
+
+    _CONFIG_DIR = os.environ.get("CONFIG_DIR", "config")
+    config.config_dir = Path(_CONFIG_DIR)
+    config.reload()
+
+    service_name = config.get("service.name", settings.SERVICE_NAME)
+    logger = init_app_logging(service_name=service_name)
+
+    # Use the initialized logger if available, else print
+    if logger:
+        logger.info(f"Loading config from directory: {_CONFIG_DIR}")
+        try:
+            files = config.list_config_files()
+            logger.info(f"Config files loaded: {files}")
+        except Exception:
+            logger.info("Config files loaded: <unavailable>")
+    else:
+        print(f"Loading config from directory: {_CONFIG_DIR}")

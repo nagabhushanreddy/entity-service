@@ -12,6 +12,7 @@ from app.schemas import (
     EntityTypeListResponse,
     ErrorResponse
 )
+from app.middleware import get_requestor_id
 from app.config import settings
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -30,6 +31,7 @@ async def get_entity_type_service(session: AsyncSession = Depends(get_session)) 
     status_code=status.HTTP_201_CREATED,
     responses={
         400: {"model": ErrorResponse, "description": "Invalid input or entity type already exists"},
+        409: {"model": ErrorResponse, "description": "Entity type already exists"},
     }
 )
 async def create_entity_type(
@@ -39,10 +41,13 @@ async def create_entity_type(
     """
     Create a new entity type and its table (DDL operation).
     
+    The requestor (from X-Requestor-Id header) becomes the owner of the entity type.
+    Only the owner can modify or delete this entity type.
+    
     - **entity_type**: Name of the entity type (e.g., 'user', 'product')
     - **description**: Optional description
     - **columns**: List of column definitions for the table
-    - **created_by**: User creating the entity type
+    - **X-Requestor-Id**: Required header identifying the service/tenant
     
     Example:
     ```json
@@ -53,15 +58,12 @@ async def create_entity_type(
             {"name": "email", "type": "string", "nullable": false, "unique": true, "max_length": 255},
             {"name": "username", "type": "string", "nullable": false, "indexed": true, "max_length": 100},
             {"name": "age", "type": "integer", "nullable": true}
-        ],
-        "created_by": "admin"
+        ]
     }
     ```
     """
-    try:
-        return await service.create_entity_type(entity_type_data)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    requestor_id = get_requestor_id()
+    return await service.create_entity_type(entity_type_data, requestor=requestor_id)
 
 
 @entity_type_router.get(
@@ -99,14 +101,8 @@ async def get_entity_type(
     entity_type: str,
     service: EntityTypeService = Depends(get_entity_type_service)
 ) -> EntityTypeResponse:
-    """Get a specific entity type definition."""
-    result = await service.get_entity_type(entity_type)
-    if not result:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Entity type '{entity_type}' not found"
-        )
-    return result
+    """Get a specific entity type definition. Available for any requestor (read-only)."""
+    return await service.get_entity_type(entity_type)
 
 
 @entity_type_router.delete(
@@ -114,6 +110,7 @@ async def get_entity_type(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         404: {"model": ErrorResponse, "description": "Entity type not found"},
+        403: {"model": ErrorResponse, "description": "Requestor does not own this entity type"},
     }
 )
 async def delete_entity_type(
@@ -123,11 +120,9 @@ async def delete_entity_type(
     """
     Deactivate an entity type (soft delete).
     
-    Note: This marks the entity type as inactive but does not drop the table.
+    Note: Only the owner (requestor who created the entity type) can delete it.
+    This marks the entity type as inactive but does not drop the table.
     """
-    success = await service.delete_entity_type(entity_type)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Entity type '{entity_type}' not found"
-        )
+    requestor_id = get_requestor_id()
+    await service.delete_entity_type(entity_type, requestor=requestor_id)
+

@@ -1,0 +1,6 @@
+{
+  "database": {
+    "url": "sqlite+aiosqlite:///./entity.db",
+    "echo": false
+  }
+}
