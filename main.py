@@ -8,13 +8,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings, config, initialize_config
-from app.database import Base, EntityTypeDefinition, _dynamic_models
-from app.dependencies import get_session, init_session_maker
-from app.entity_type_routes import entity_type_router
-from app.entity_type_service import EntityTypeService
-from app.dynamic_routes import get_dynamic_router
-from app.discovery_routes import discovery_router
-from app.routes import entity_router
+from app.database import Base, EntityTypeDefinition, _dynamic_models, get_session, init_session_maker
+from app.routes import entity_type_router, get_dynamic_router, discovery_router, entity_router
+from app.services import EntityTypeService
 from app.middleware import RequestContextMiddleware, get_correlation_id
 from app.exceptions import EntityServiceException
 from app.error_codes import ERROR_CODE_MESSAGES

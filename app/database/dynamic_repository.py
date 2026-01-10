@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from app.database import _dynamic_models
+from app.database.database import _dynamic_models
 
 
 class DynamicEntityRepository:

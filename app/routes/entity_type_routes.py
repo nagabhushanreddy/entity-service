@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 
-from app.dependencies import get_session
-from app.entity_type_service import EntityTypeService
+from app.database import get_session
+from app.services import EntityTypeService
 from app.schemas import (
     EntityTypeCreate,
     EntityTypeResponse,

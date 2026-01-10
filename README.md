@@ -46,7 +46,7 @@ entity-service/
 ├── requirements-dev.txt       # Development dependencies (pytest, black, mypy, etc.)
 ├── .env.example               # Environment variables template
 ├── config/                    # Configuration directory (loaded at startup)
-│   ├── app.json              # API metadata: version, prefix (/api/${version}), project name
+│   ├── app.json              # API metadata: version, prefix (/api/${version}), project name, port
 │   ├── database.json         # Database connection settings (SQLite default)
 │   ├── logging.json          # Logging config (console + rotating file/error handlers)
 │   ├── paths.json            # Service paths (logs/, data/ auto-created)
@@ -54,18 +54,28 @@ entity-service/
 ├── app/
 │   ├── __init__.py
 │   ├── config.py             # Config loader: utils-service preferred → local JSON fallback
-│   ├── database.py           # SQLAlchemy ORM models (EntityType, DynamicEntity with created_by)
 │   ├── schemas.py            # Pydantic models (StandardResponse wrapper, error schemas, etc.)
 │   ├── exceptions.py         # Custom exceptions (EntityTypeExists, RequestorMismatch, etc.)
 │   ├── middleware.py         # Request context middleware (X-Requestor-Id, correlation ID)
 │   ├── error_codes.py        # Entity service error codes (DDL/DML specific, not auth-focused)
-│   ├── repository.py         # Data access layer (queries, filters)
-│   ├── entity_type_service.py # DDL business logic (create/update/list entity types, requestor ownership)
-│   ├── dynamic_service.py     # DML business logic (CRUD for dynamic entities, requestor authorization)
-│   ├── entity_type_routes.py  # DDL endpoints (/entity-types GET/POST/PATCH/DELETE)
-│   ├── dynamic_routes.py      # DML endpoints (auto-generated per entity type under /v1/{type}/...)
-│   ├── discovery_routes.py    # Agent discovery endpoints (/discovery/*, OpenAPI, schemas)
-│   └── client.py             # Async/Sync client library for other services
+│   ├── client.py             # Async/Sync client library for other services
+│   ├── database/             # Database layer
+│   │   ├── __init__.py
+│   │   ├── database.py       # SQLAlchemy ORM models (EntityType, DynamicEntity)
+│   │   ├── repository.py     # Data access layer for entity types
+│   │   ├── dynamic_repository.py # Data access layer for dynamic entities
+│   │   └── dependencies.py   # FastAPI dependency injection (sessions)
+│   ├── routes/               # API route handlers
+│   │   ├── __init__.py
+│   │   ├── entity_type_routes.py  # DDL endpoints (/entity-types GET/POST/PATCH/DELETE)
+│   │   ├── dynamic_routes.py      # DML endpoints (auto-generated per entity type)
+│   │   ├── discovery_routes.py    # Agent discovery endpoints (/discovery/*)
+│   │   └── routes.py              # Legacy entity routes
+│   └── services/             # Business logic layer
+│       ├── __init__.py
+│       ├── entity_type_service.py # DDL logic (create/update/list entity types, ownership)
+│       ├── dynamic_service.py     # DML logic (CRUD for dynamic entities, authorization)
+│       └── service.py             # Legacy entity service
 ├── tests/
 │   ├── discovery_test.py      # Discovery endpoints and agent integration
 │   ├── entity_type_test.py    # DDL operations (create/update/list entity types)

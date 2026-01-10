@@ -6,8 +6,7 @@ Run with: pytest tests/entity_type_test.py -v
 import pytest
 from httpx import AsyncClient
 
-from app.dependencies import get_session
-from app.database import Base
+from app.database import get_session, Base, _dynamic_models
 from main import app
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
@@ -43,8 +42,8 @@ async def client(test_db_session):
     async def override_get_session():
         yield session
 
-    from app.entity_type_routes import get_entity_type_service
-    from app.entity_type_service import EntityTypeService
+    from app.routes.entity_type_routes import get_entity_type_service
+    from app.services import EntityTypeService
     from app.database import _dynamic_models, Base
     from fastapi import Depends
     from sqlalchemy.ext.asyncio import AsyncSession

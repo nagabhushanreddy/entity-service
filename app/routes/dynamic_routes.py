@@ -4,9 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, Dict, Any
 
-from app.dependencies import get_session
-from app.dynamic_service import DynamicEntityService
-from app.entity_type_service import EntityTypeService
+from app.database import get_session
+from app.services.dynamic_service import DynamicEntityService
+from app.services import EntityTypeService
 from app.schemas import (
     DynamicEntityCreate,
     DynamicEntityUpdate,

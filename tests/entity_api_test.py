@@ -9,8 +9,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from app.dependencies import get_session
-from app.database import Base
+from app.database import get_session, Base
 from main import app
 
 

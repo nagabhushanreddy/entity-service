@@ -3,9 +3,9 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dynamic_repository import DynamicEntityRepository
+from app.database import DynamicEntityRepository
 from app.schemas import DynamicEntityCreate, DynamicEntityUpdate, DynamicEntityResponse
-from app.entity_type_service import EntityTypeService
+from app.services import EntityTypeService
 from app.exceptions import RequestorMismatchError
 
 

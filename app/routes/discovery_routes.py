@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, List
 
-from app.dependencies import get_session
-from app.entity_type_service import EntityTypeService
+from app.database import get_session
+from app.services import EntityTypeService
 from app.database import _dynamic_models
 from app.config import settings
 

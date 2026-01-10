@@ -3,7 +3,7 @@
 from typing import Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repository import EntityRepository
+from app.database import EntityRepository
 from app.schemas import EntityCreate, EntityUpdate, EntityResponse
 from app.database import Entity
 

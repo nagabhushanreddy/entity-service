@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
 from datetime import datetime
 
-from app.database import Entity
+from app.database.database import Entity
 from app.schemas import EntityCreate, EntityUpdate
 
 
