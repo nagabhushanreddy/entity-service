@@ -101,7 +101,7 @@ async def sample_entity_type(client, test_db_session):
         # Model exists but not in current test's DB
         # Manually insert the EntityTypeDefinition record
         from app.database import EntityTypeDefinition
-        from datetime import datetime
+        from datetime import datetime, timezone
         
         entity_type_def = EntityTypeDefinition(
             entity_type="discovery_user",
@@ -135,8 +135,8 @@ async def sample_entity_type(client, test_db_session):
             description="User entities for testing",
             is_active=True,
             created_by="test",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc)
         )
         
         session.add(entity_type_def)

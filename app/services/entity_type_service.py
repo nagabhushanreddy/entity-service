@@ -3,7 +3,7 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import Column, String, Integer, Float, Boolean, Text, JSON, DateTime, Index, select
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.database import Base, EntityTypeDefinition, create_dynamic_entity_model, _dynamic_models
 from app.schemas import EntityTypeCreate, EntityTypeResponse, ColumnDefinition, ColumnType
@@ -230,7 +230,7 @@ class EntityTypeService:
             raise RequestorMismatchError(entity_type, requestor)
         
         entity_type_def.is_active = False
-        entity_type_def.updated_at = datetime.utcnow()
+        entity_type_def.updated_at = datetime.now(timezone.utc)
         
         await self.session.commit()
         return True

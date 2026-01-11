@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, String, DateTime, JSON, Text, Boolean, Integer, MetaData
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional, Type
 import uuid
 
@@ -20,8 +20,8 @@ class EntityTypeDefinition(Base):
     schema_definition = Column(JSON, nullable=False)  # Column definitions
     description = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     created_by = Column(String(255), nullable=True)
     
     def __repr__(self):
@@ -47,8 +47,8 @@ def create_dynamic_entity_model(
         "__tablename__": table_name,
         "id": Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4())),
         "is_active": Column(Boolean, default=True, nullable=False),
-        "created_at": Column(DateTime, default=datetime.utcnow, nullable=False),
-        "updated_at": Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False),
+        "created_at": Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False),
+        "updated_at": Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False),
         "created_by": Column(String(255), nullable=True),
         "updated_by": Column(String(255), nullable=True),
         "version": Column(Integer, default=1, nullable=False),
@@ -83,8 +83,8 @@ class Entity(Base):
     data = Column(JSON, nullable=True)
     entity_metadata = Column("metadata", JSON, nullable=True)  # Renamed to avoid SQLAlchemy reserved name
     is_active = Column(Boolean, default=True, nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     created_by = Column(String(255), nullable=True)
     updated_by = Column(String(255), nullable=True)
     version = Column(Integer, default=1, nullable=False)

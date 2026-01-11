@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Any, Dict, List, Generic, TypeVar
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import uuid
 
@@ -182,7 +182,7 @@ class StandardErrorDetail(BaseModel):
 
 class StandardMetadata(BaseModel):
     """Standard response metadata"""
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="ISO8601 timestamp")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="ISO8601 timestamp")
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Request correlation ID")
 
 
@@ -199,7 +199,7 @@ class ErrorResponse(BaseModel):
     
     detail: str
     error_code: Optional[str] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class HealthResponse(BaseModel):

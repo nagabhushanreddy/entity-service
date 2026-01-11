@@ -3,7 +3,7 @@
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.database.database import Entity
 from app.schemas import EntityCreate, EntityUpdate
@@ -86,7 +86,7 @@ class EntityRepository:
         for field, value in update_data.items():
             setattr(entity, field, value)
         
-        entity.updated_at = datetime.utcnow()
+        entity.updated_at = datetime.now(timezone.utc)
         entity.version += 1
         
         await self.session.commit()
@@ -100,7 +100,7 @@ class EntityRepository:
             return False
         
         entity.is_active = False
-        entity.updated_at = datetime.utcnow()
+        entity.updated_at = datetime.now(timezone.utc)
         
         await self.session.commit()
         return True

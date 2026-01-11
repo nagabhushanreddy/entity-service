@@ -83,7 +83,7 @@ class DynamicEntityRepository:
             if hasattr(entity, field):
                 setattr(entity, field, value)
         
-        entity.updated_at = datetime.utcnow()
+        entity.updated_at = datetime.now(timezone.utc)
         entity.version += 1
         
         await self.session.commit()
@@ -97,7 +97,7 @@ class DynamicEntityRepository:
             return False
         
         entity.is_active = False
-        entity.updated_at = datetime.utcnow()
+        entity.updated_at = datetime.now(timezone.utc)
         
         await self.session.commit()
         return True
