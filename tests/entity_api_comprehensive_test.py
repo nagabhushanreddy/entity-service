@@ -127,7 +127,7 @@ async def test_create_entity_with_too_long_name(client):
     }
 
     response = await client.post("/api/v1/entities", json=entity_data)
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 @pytest.mark.asyncio
@@ -364,14 +364,14 @@ async def test_list_entities_pagination_edge_cases(client):
 async def test_list_entities_max_limit(client):
     """Test that limit is capped at 1000."""
     response = await client.get("/api/v1/entities?limit=2000")
-    assert response.status_code == 422  # Validation error
+    assert response.status_code == 400  # Validation error
 
 
 @pytest.mark.asyncio
 async def test_list_entities_negative_skip(client):
     """Test negative skip parameter."""
     response = await client.get("/api/v1/entities?skip=-1")
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 # ===== Delete Tests =====

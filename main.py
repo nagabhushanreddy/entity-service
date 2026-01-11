@@ -113,20 +113,22 @@ app.add_middleware(
 @app.exception_handler(EntityServiceException)
 async def entity_service_exception_handler(request, exc: EntityServiceException):
     """Handle Entity Service exceptions."""
+    response = StandardResponse(
+        success=False,
+        data=None,
+        error=StandardErrorDetail(
+            code=exc.error_code.value,
+            message=exc.message,
+            details=exc.details if exc.details else None
+        ),
+        metadata=StandardMetadata(
+            correlation_id=get_correlation_id()
+        )
+    )
+    
     return JSONResponse(
         status_code=exc.status_code,
-        content=StandardResponse(
-            success=False,
-            data=None,
-            error=StandardErrorDetail(
-                code=exc.error_code.value,
-                message=exc.message,
-                details=exc.details if exc.details else None
-            ),
-            metadata=StandardMetadata(
-                correlation_id=get_correlation_id()
-            )
-        ).model_dump(exclude_none=True)
+        content=response.model_dump(exclude_none=True, mode='json')
     )
 
 
@@ -138,20 +140,22 @@ async def validation_exception_handler(request, exc: RequestValidationError):
         field = '.'.join(str(x) for x in error['loc'][1:])
         errors[field] = error['msg']
     
+    response = StandardResponse(
+        success=False,
+        data=None,
+        error=StandardErrorDetail(
+            code=ErrorCode.VALIDATION_ERROR.value,
+            message=ERROR_CODE_MESSAGES[ErrorCode.VALIDATION_ERROR],
+            details=errors if errors else None
+        ),
+        metadata=StandardMetadata(
+            correlation_id=get_correlation_id()
+        )
+    )
+    
     return JSONResponse(
         status_code=400,
-        content=StandardResponse(
-            success=False,
-            data=None,
-            error=StandardErrorDetail(
-                code=ErrorCode.VALIDATION_ERROR.value,
-                message=ERROR_CODE_MESSAGES[ErrorCode.VALIDATION_ERROR],
-                details=errors if errors else None
-            ),
-            metadata=StandardMetadata(
-                correlation_id=get_correlation_id()
-            )
-        ).model_dump(exclude_none=True)
+        content=response.model_dump(exclude_none=True, mode='json')
     )
 
 

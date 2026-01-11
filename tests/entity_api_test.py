@@ -89,7 +89,7 @@ async def test_create_entity_missing_required_field(client):
     }
 
     response = await client.post("/api/v1/entities", json=entity_data)
-    assert response.status_code == 422  # Validation error
+    assert response.status_code == 400  # Validation error
 
 
 @pytest.mark.asyncio
@@ -101,7 +101,7 @@ async def test_create_entity_empty_name(client):
     }
 
     response = await client.post("/api/v1/entities", json=entity_data)
-    assert response.status_code == 422
+    assert response.status_code == 400
 
 
 # Entity Retrieval Tests
