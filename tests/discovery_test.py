@@ -1,13 +1,29 @@
+
 """
 Tests for Discovery API endpoints
 Run with: pytest tests/discovery_test.py -v
+Or run directly: python tests/discovery_test.py [options]
+
+Options when running directly:
+    all              - Run all tests (including skipped)
+    isolation        - Run only non-isolation tests
+    skipped          - Run only skipped tests
+    service          - Run service discovery tests
+    entities         - Run entity type discovery tests
+    operations       - Run operations discovery tests
+    integration      - Run integration tests
+    [pattern]        - Run tests matching pattern (e.g., 'test_get_service')
 """
+
+import os
+import sys
+from helper import bootstrap, select_and_run
+bootstrap()
 
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 from fastapi import Depends
-
 from app.database import get_session, Base, EntityTypeDefinition, _dynamic_models
 from main import app
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -43,8 +59,8 @@ async def client(test_db_session):
     from app.services import EntityTypeService
     from app.database import _dynamic_models, Base
     
-    # Clear any previous dynamic models before starting the test
-    _dynamic_models.clear()
+    # Note: We don't clear _dynamic_models here because models should persist
+    # across tests to avoid SQLAlchemy Base registry conflicts
     
     session, engine = test_db_session
 
@@ -60,14 +76,82 @@ async def client(test_db_session):
     async with AsyncClient(app=app, base_url="http://test") as async_client:
         yield async_client
 
-    # Clear dynamic models cache to avoid table redefinition errors
-    _dynamic_models.clear()
+    # Don't clear dynamic models - let them persist across tests
     app.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture
-async def sample_entity_type(client):
+async def sample_entity_type(client, test_db_session):
     """Create a sample entity type for discovery tests."""
+    session, engine = test_db_session
+    
+    # Check if the entity type model already exists in _dynamic_models from a previous test
+    # This prevents SQLAlchemy errors when trying to recreate the same model class
+    if "discovery_user" in _dynamic_models:
+        # Model exists, check if DB record exists in current test's database
+        check_response = await client.get("/api/v1/entity_type")
+        if check_response.status_code == 200:
+            entity_types = check_response.json()
+            if "discovery_user" in entity_types:
+                # Both model and DB record exist, fetch details
+                detail_response = await client.get("/api/v1/entity_type/discovery_user")
+                if detail_response.status_code == 200:
+                    return detail_response.json()
+        
+        # Model exists but not in current test's DB
+        # Manually insert the EntityTypeDefinition record
+        from app.database import EntityTypeDefinition
+        from datetime import datetime
+        
+        entity_type_def = EntityTypeDefinition(
+            entity_type="discovery_user",
+            table_name="entity_discovery_user",
+            schema_definition={
+                "email": {
+                    "type": "string",
+                    "nullable": False,
+                    "unique": True,
+                    "max_length": 255,
+                    "description": "User email address"
+                },
+                "username": {
+                    "type": "string",
+                    "nullable": False,
+                    "indexed": True,
+                    "max_length": 100,
+                    "description": "Username"
+                },
+                "age": {
+                    "type": "integer",
+                    "nullable": True,
+                    "description": "User age"
+                },
+                "is_verified": {
+                    "type": "boolean",
+                    "nullable": False,
+                    "default": False
+                }
+            },
+            description="User entities for testing",
+            is_active=True,
+            created_by="test",
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        
+        session.add(entity_type_def)
+        await session.commit()
+        await session.refresh(entity_type_def)
+        
+        return {
+            "entity_type": entity_type_def.entity_type,
+            "table_name": entity_type_def.table_name,
+            "description": entity_type_def.description,
+            "is_active": entity_type_def.is_active,
+            "created_by": entity_type_def.created_by
+        }
+    
+    # Create new entity type (model and DB record via API)
     entity_type_data = {
         "entity_type": "discovery_user",
         "description": "User entities for testing",
@@ -110,6 +194,7 @@ async def sample_entity_type(client):
 
 
 # Service Discovery Tests
+@pytest.mark.order(1)
 @pytest.mark.asyncio
 async def test_get_service_info(client):
     """Test service discovery endpoint."""
@@ -133,6 +218,7 @@ async def test_get_service_info(client):
         assert col_type in data["supported_column_types"]
 
 
+@pytest.mark.order(2)
 @pytest.mark.asyncio
 async def test_discover_entity_types_empty(client):
     """Test entity type discovery when no types exist."""
@@ -144,6 +230,7 @@ async def test_discover_entity_types_empty(client):
     assert data["entity_types"] == {}
 
 
+@pytest.mark.order(3)
 @pytest.mark.asyncio
 async def test_discover_entity_types_with_data(client, sample_entity_type):
     """Test entity type discovery with existing entity types."""
@@ -174,7 +261,7 @@ async def test_discover_entity_types_with_data(client, sample_entity_type):
     assert user_type["methods"]["delete"] == "DELETE"
 
 
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(6)
 @pytest.mark.asyncio
 async def test_discover_schemas_all(client, sample_entity_type):
     """Test discovering all schemas."""
@@ -184,11 +271,11 @@ async def test_discover_schemas_all(client, sample_entity_type):
     data = response.json()
     assert data["total"] == 1
     assert "schemas" in data
-    assert "user" in data["schemas"]
+    assert "discovery_user" in data["schemas"]
     
-    user_schema = data["schemas"]["user"]
-    assert user_schema["entity_type"] == "user"
-    assert user_schema["table_name"] == "entity_user"
+    user_schema = data["schemas"]["discovery_user"]
+    assert user_schema["entity_type"] == "discovery_user"
+    assert user_schema["table_name"] == "entity_discovery_user"
     assert "columns" in user_schema
     assert "base_columns" in user_schema
     
@@ -199,16 +286,16 @@ async def test_discover_schemas_all(client, sample_entity_type):
     assert "version" in user_schema["base_columns"]
 
 
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(7)
 @pytest.mark.asyncio
 async def test_discover_specific_schema(client, sample_entity_type):
     """Test discovering schema for a specific entity type."""
-    response = await client.get("/api/v1/discovery/schemas/user")
+    response = await client.get("/api/v1/discovery/schemas/discovery_user")
     assert response.status_code == 200
     
     data = response.json()
-    assert data["entity_type"] == "user"
-    assert data["table_name"] == "entity_user"
+    assert data["entity_type"] == "discovery_user"
+    assert data["table_name"] == "entity_discovery_user"
     assert data["description"] == "User entities for testing"
     
     # Verify columns
@@ -239,10 +326,11 @@ async def test_discover_specific_schema(client, sample_entity_type):
     
     # Verify endpoints
     assert "endpoints" in data
-    assert data["endpoints"]["create"] == "/api/v1/user"
+    assert data["endpoints"]["create"] == "/api/v1/discovery_user"
 
 
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+# @pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(4)
 @pytest.mark.asyncio
 async def test_discover_nonexistent_schema(client):
     """Test discovering schema for non-existent entity type."""
@@ -251,9 +339,10 @@ async def test_discover_nonexistent_schema(client):
     
     data = response.json()
     assert "error" in data
-    assert "nonexistent" in data["detail"]
+    assert "nonexistent" in data["error"]["message"]
 
 
+@pytest.mark.order(5)
 @pytest.mark.asyncio
 async def test_discover_operations(client):
     """Test discovering supported operations."""
@@ -295,10 +384,13 @@ async def test_discover_operations(client):
 
 
 # Integration Tests - Full Discovery Flow
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(8)
 @pytest.mark.asyncio
 async def test_full_discovery_flow(client):
     """Test complete discovery flow: service -> entity types -> schemas -> operations."""
+    from app.routes import get_dynamic_router
+    from main import app
+    from app.config import settings
     
     # Step 1: Discover service
     response = await client.get("/api/v1/discovery/")
@@ -320,6 +412,10 @@ async def test_full_discovery_flow(client):
     
     response = await client.post("/api/v1/entity_type", json=entity_type_data)
     assert response.status_code == 201
+    
+    # Manually register the dynamic router (since tests don't restart the app)
+    product_router = get_dynamic_router("product")
+    app.include_router(product_router, prefix=settings.API_PREFIX)
     
     # Step 3: Discover entity types
     response = await client.get("/api/v1/discovery/entity-types")
@@ -358,13 +454,21 @@ async def test_full_discovery_flow(client):
     assert products["total"] == 1
 
 
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(9)
 @pytest.mark.asyncio
 async def test_schema_example_payload_accuracy(client, sample_entity_type):
     """Test that example payloads in schema are valid for creating entities."""
+    from app.routes import get_dynamic_router
+    from main import app
+    from app.config import settings
+    
+    # Register dynamic router for discovery_user entity type
+    if "discovery_user" in _dynamic_models:
+        user_router = get_dynamic_router("discovery_user")
+        app.include_router(user_router, prefix=settings.API_PREFIX)
     
     # Get schema with example
-    response = await client.get("/api/v1/discovery/schemas/user")
+    response = await client.get("/api/v1/discovery/schemas/discovery_user")
     assert response.status_code == 200
     schema = response.json()
     
@@ -375,7 +479,8 @@ async def test_schema_example_payload_accuracy(client, sample_entity_type):
     example["created_by"] = "test"
     
     create_endpoint = schema["endpoints"]["create"]
-    response = await client.post(create_endpoint, json=example)
+    # Add X-Requestor-Id header to match the owner of the entity type
+    response = await client.post(create_endpoint, json=example, headers={"X-Requestor-Id": "test"})
     assert response.status_code == 201
     
     created = response.json()
@@ -383,46 +488,63 @@ async def test_schema_example_payload_accuracy(client, sample_entity_type):
     assert created["username"] == "testuser"
 
 
-@pytest.mark.skip(reason="Test isolation issues with fixture setup")
+@pytest.mark.order(10)
 @pytest.mark.asyncio
 async def test_multiple_entity_types_discovery(client):
     """Test discovery with multiple entity types."""
+    from app.routes import get_dynamic_router
+    from main import app
+    from app.config import settings
     
     # Create multiple entity types
     types_to_create = [
         {
-            "entity_type": "user",
+            "entity_type": "test_user",
             "description": "Users",
-            "columns": [{"name": "email", "type": "string", "nullable": False}]
+            "columns": [{"name": "email", "type": "string", "nullable": False}],
+            "created_by": "test"
         },
         {
-            "entity_type": "product",
+            "entity_type": "test_product",
             "description": "Products",
-            "columns": [{"name": "name", "type": "string", "nullable": False}]
+            "columns": [{"name": "name", "type": "string", "nullable": False}],
+            "created_by": "test"
         },
         {
-            "entity_type": "order",
+            "entity_type": "test_order",
             "description": "Orders",
-            "columns": [{"name": "order_id", "type": "string", "nullable": False}]
+            "columns": [{"name": "order_id", "type": "string", "nullable": False}],
+            "created_by": "test"
         }
     ]
     
     for entity_type_data in types_to_create:
         response = await client.post("/api/v1/entity_type", json=entity_type_data)
         assert response.status_code == 201
+        
+        # Register dynamic router for each created entity type
+        entity_type_name = entity_type_data["entity_type"]
+        entity_router = get_dynamic_router(entity_type_name)
+        app.include_router(entity_router, prefix=settings.API_PREFIX)
     
     # Discover all entity types
     response = await client.get("/api/v1/discovery/entity-types")
     assert response.status_code == 200
     
     data = response.json()
-    assert data["total"] == 3
-    assert "user" in data["entity_types"]
-    assert "product" in data["entity_types"]
-    assert "order" in data["entity_types"]
+    # Should have at least 3 (might have more from previous tests due to _dynamic_models persistence)
+    assert data["total"] >= 3
+    assert "test_user" in data["entity_types"]
+    assert "test_product" in data["entity_types"]
+    assert "test_order" in data["entity_types"]
     
     # Verify each has proper endpoints
-    for entity_type in ["user", "product", "order"]:
+    for entity_type in ["test_user", "test_product", "test_order"]:
         et_info = data["entity_types"][entity_type]
         assert et_info["endpoints"]["create"] == f"/api/v1/{entity_type}"
         assert et_info["endpoints"]["list"] == f"/api/v1/{entity_type}"
+
+
+if __name__ == "__main__":
+    # Delegate to helper-runner with selectors or flags
+    select_and_run(__file__, sys.argv[1:])
