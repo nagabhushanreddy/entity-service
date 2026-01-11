@@ -1,26 +1,25 @@
+import os
+from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import datetime
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from app.config import settings, config, initialize_config
-from app.database import Base, EntityTypeDefinition, _dynamic_models, get_session, init_session_maker
+from app.config import settings
+from app.database import Base, EntityTypeDefinition, _dynamic_models, init_session_maker
 from app.routes import entity_type_router, get_dynamic_router, discovery_router, entity_router
 from app.services import EntityTypeService
 from app.middleware import RequestContextMiddleware, get_correlation_id
 from app.exceptions import EntityServiceException
-from app.error_codes import ERROR_CODE_MESSAGES
+from app.error_codes import ERROR_CODE_MESSAGES, ErrorCode
 from app.schemas import StandardResponse, StandardErrorDetail, StandardMetadata
-from utils import init_app_logging
-
-# Configure logging
-logger = init_app_logging(
-    service_name=settings.SERVICE_NAME
-)
+from utils import logger
 
 # Initialize database
 engine = None
@@ -43,7 +42,7 @@ async def load_entity_types():
         # Register dynamic routers for each entity type
         for entity_type in _dynamic_models.keys():
             dynamic_router = get_dynamic_router(entity_type)
-            app.include_router(dynamic_router, prefix=config.api_prefix)
+            app.include_router(dynamic_router, prefix=settings.API_PREFIX)
             logger.info(f"Registered dynamic router for entity type: {entity_type}")
 
 
@@ -55,12 +54,13 @@ async def close_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage app lifespan"""
+    """Lifespan context manager for startup and shutdown events"""
     global engine
     
     # Startup
-    # Initialize configuration and logging via utils-service (with local fallback)
-    initialize_config()
+    logger.info(f"Starting {settings.SERVICE_NAME} v{settings.SERVICE_VERSION}")
+    logger.info(f"Environment: {settings.ENVIRONMENT}")
+    logger.info(f"Server: {settings.HOST}:{settings.PORT}")
 
     engine = create_async_engine(
         settings.DATABASE_URL,
@@ -82,22 +82,31 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     await close_db()
-    logger.info("Application shutdown complete")
+    logger.info(f"Shutting down {settings.SERVICE_NAME}")
 
 
-# Create FastAPI app with OpenAPI metadata
+# Create FastAPI app
 app = FastAPI(
     title="Entity API",
     description="Service for CRUD operations and entity management with dynamic table support",
     version="2.0.0",
+    docs_url=f"{settings.API_PREFIX}/docs",
+    redoc_url=f"{settings.API_PREFIX}/redoc",
+    openapi_url=f"{settings.API_PREFIX}/openapi.json",
     lifespan=lifespan,
-    openapi_url=f"{config.api_prefix}/openapi.json",
-    docs_url=f"{config.api_prefix}/docs",
-    redoc_url=f"{config.api_prefix}/redoc"
 )
 
-# Add middleware for request context handling
+# Add middleware
 app.add_middleware(RequestContextMiddleware)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Exception handlers
@@ -124,7 +133,6 @@ async def entity_service_exception_handler(request, exc: EntityServiceException)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
     """Handle Pydantic validation errors."""
-    from app.error_codes import ErrorCode
     errors = {}
     for error in exc.errors():
         field = '.'.join(str(x) for x in error['loc'][1:])
@@ -147,20 +155,36 @@ async def validation_exception_handler(request, exc: RequestValidationError):
     )
 
 
-# Health check endpoint
+# Include routers
+app.include_router(entity_router, prefix=settings.API_PREFIX)
+app.include_router(entity_type_router, prefix=settings.API_PREFIX)
+app.include_router(discovery_router, prefix=settings.API_PREFIX)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "service": settings.SERVICE_NAME,
+        "version": settings.SERVICE_VERSION,
+        "environment": settings.ENVIRONMENT,
+        "docs": f"{settings.API_PREFIX}/docs",
+    }
+
+
 @app.get("/healthz", tags=["health"])
 def healthz() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
 
 
-# Include routers
-app.include_router(entity_router, prefix=config.api_prefix)
-app.include_router(entity_type_router, prefix=config.api_prefix)
-app.include_router(discovery_router, prefix=config.api_prefix)
-
-
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=config.port, reload=True)
+    uvicorn.run(
+        "main:app",
+        host=settings.HOST,
+        port=settings.PORT,
+        workers=settings.WORKERS,
+        reload=settings.ENVIRONMENT == "development",
+    )

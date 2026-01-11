@@ -1,81 +1,124 @@
-### Environment files
+# =======================================
+# Python Microservices .gitignore Template
+# =======================================
+
+### Environment Configuration
 .env
-.env.*
+.env.local
+.env.*.local
 !.env.example
 
-### Virtual environments
-.venv/
+### Virtual Environments
 venv/
-ENV/
 env/
+ENV/
+.venv/
+.virtualenv/
+python-venv/
 
-### Python bytecode
+### IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vim/
+.emacs*
+*.iml
+
+### Python Bytecode & Cache
 __pycache__/
 *.py[cod]
 *$py.class
-
-### C extensions
 *.so
-
-### Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
+*.egg-info/
 .eggs/
+dist/
+build/
+*.egg
+MANIFEST
+
+### Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+### IDE Cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+### Installation
 lib/
 lib64/
 parts/
 sdist/
 var/
-*.egg-info/
-.installed.cfg
-*.egg
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
 
-### Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+### PEP 582
+__pypackages__/
 
-### Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-*.hypothesis/
-.pytest_cache/
-reports/coverage-html/
-reports/coverage.xml
-reports/junit.xml
+### Celery
+celerybeat-schedule
+celerybeat.pid
 
-### Type checker / linters
-.mypy_cache/
-.pyre/
-.ruff_cache/
-
-### IDE / editor
-.idea/
-.vscode/
-*.swp
-*.swo
-
-### OS files
-.DS_Store
-
-### Logs and data
-logs/
-data/
-*.log
-
-### Databases
+### Database Files
 *.db
+*.sqlite
+*.sqlite3
+*.pkl
+*.pickle
+*.json (only for local test data, not config)
 
-### Docker overrides
-docker-compose.override.yml
+### Logs & Reports
+logs/
+reports/
+*.log
+*.log.*
+*.out
+
+### IDE Run Configurations
+.run/
+
+### macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+### Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+### Linux
+.directory
+*~
+
+### Runtime Generated Files
+.cache/
+tmp/
+temp/
+*.tmp
+*.bak
+
+### OS Specific Files
+.vscode-server/
